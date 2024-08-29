@@ -3,13 +3,13 @@ package web
 import (
 	"encoding/json"
 	"errors"
-	"github.com/matheusmhmelo/FullCycle-cep-service/cep_api/internal/infra/gateway"
+	"github.com/matheusmhmelo/FullCycle-cep-api/internal/infra/gateway"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"net/http"
 
-	"github.com/matheusmhmelo/FullCycle-cep-service/cep_api/internal/usecase"
+	"github.com/matheusmhmelo/FullCycle-cep-api/internal/usecase"
 )
 
 type OrderHandler struct {
@@ -31,11 +31,11 @@ func (h *OrderHandler) Get(w http.ResponseWriter, r *http.Request) {
 	carrier := propagation.HeaderCarrier(r.Header)
 	ctx := r.Context()
 	ctx = otel.GetTextMapPropagator().Extract(ctx, carrier)
-	ctx, span := h.otelTracer.Start(ctx, "POST")
+	ctx, span := h.otelTracer.Start(ctx, "GET")
 	defer span.End()
 
 	cep := r.URL.Query().Get("cep")
-	output, err := h.weather.Execute(cep)
+	output, err := h.weather.Execute(ctx, cep)
 	if err != nil {
 		if errors.Is(err, gateway.ErrorInvalidCEP) {
 			http.Error(w, err.Error(), http.StatusUnprocessableEntity)

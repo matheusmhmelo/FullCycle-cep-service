@@ -19,8 +19,8 @@ var (
 var doFunc = http.DefaultClient.Do
 
 type WeatherGatewayInterface interface {
-	ValidateLocation(cep string) (string, error)
-	GetWeather() (float64, error)
+	ValidateLocation(ctx context.Context, cep string) (string, error)
+	GetWeather(ctx context.Context) (float64, error)
 }
 
 type cepResponse struct {
@@ -47,9 +47,7 @@ func New(apiKey string, otelTracer trace.Tracer) WeatherGatewayInterface {
 	}
 }
 
-func (w *weatherGatewayImpl) ValidateLocation(cep string) (string, error) {
-	ctx, span := w.otelTracer.Start(context.Background(), "Location Request")
-
+func (w *weatherGatewayImpl) ValidateLocation(ctx context.Context, cep string) (string, error) {
 	if len(cep) != 8 {
 		return "", ErrorInvalidCEP
 	}
@@ -60,6 +58,7 @@ func (w *weatherGatewayImpl) ValidateLocation(cep string) (string, error) {
 	}
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
+	ctx, span := w.otelTracer.Start(ctx, "Location Request")
 	resp, err := doFunc(req)
 	span.End()
 	if err != nil {
@@ -83,9 +82,7 @@ func (w *weatherGatewayImpl) ValidateLocation(cep string) (string, error) {
 	return content.Location, nil
 }
 
-func (w *weatherGatewayImpl) GetWeather() (float64, error) {
-	ctx, span := w.otelTracer.Start(context.Background(), "Weather Request")
-
+func (w *weatherGatewayImpl) GetWeather(ctx context.Context) (float64, error) {
 	u, err := url.Parse("http://api.weatherapi.com/v1/current.json")
 	if err != nil {
 		return 0, err
@@ -102,6 +99,7 @@ func (w *weatherGatewayImpl) GetWeather() (float64, error) {
 	}
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
+	ctx, span := w.otelTracer.Start(ctx, "Weather Request")
 	resp, err := doFunc(req)
 	span.End()
 	if err != nil {

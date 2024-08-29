@@ -9,6 +9,10 @@ import (
 	"net/url"
 )
 
+var (
+	doFunc = http.DefaultClient.Do
+)
+
 type Weather struct {
 	City       string  `json:"city"`
 	Fahrenheit float64 `json:"temp_F"`
@@ -33,7 +37,7 @@ func NewWeatherUseCase(baseURL string) WeatherUseCase {
 func (w *weatherUseCaseImpl) Execute(ctx context.Context, cep string) ([]byte, int, error) {
 	u, err := url.Parse(w.baseURL)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusInternalServerError, err
 	}
 
 	query := url.Values{}
@@ -46,7 +50,7 @@ func (w *weatherUseCaseImpl) Execute(ctx context.Context, cep string) ([]byte, i
 	}
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := doFunc(req)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}

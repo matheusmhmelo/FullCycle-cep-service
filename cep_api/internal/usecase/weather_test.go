@@ -1,9 +1,10 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 	"github.com/golang/mock/gomock"
-	"github.com/matheusmhmelo/FullCycle-cep-service/cep_api/internal/infra/gateway/mock_gateway"
+	"github.com/matheusmhmelo/FullCycle-cep-api/internal/infra/gateway/mock_gateway"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -19,8 +20,8 @@ func TestWeatherUseCaseImpl_Execute(t *testing.T) {
 			prepareMocks: func(t *testing.T) *mock_gateway.MockWeatherGatewayInterface {
 				ctrl := gomock.NewController(t)
 				mock := mock_gateway.NewMockWeatherGatewayInterface(ctrl)
-				mock.EXPECT().ValidateLocation("cep").Return("city", nil).Times(1)
-				mock.EXPECT().GetWeather().Return(float64(1), nil).Times(1)
+				mock.EXPECT().ValidateLocation(context.Background(), "cep").Return("city", nil).Times(1)
+				mock.EXPECT().GetWeather(context.Background()).Return(float64(1), nil).Times(1)
 				return mock
 			},
 			assertFunc: func(t *testing.T, got *Weather, err error) {
@@ -38,7 +39,7 @@ func TestWeatherUseCaseImpl_Execute(t *testing.T) {
 			prepareMocks: func(t *testing.T) *mock_gateway.MockWeatherGatewayInterface {
 				ctrl := gomock.NewController(t)
 				mock := mock_gateway.NewMockWeatherGatewayInterface(ctrl)
-				mock.EXPECT().ValidateLocation("cep").Return("", errors.New("error")).Times(1)
+				mock.EXPECT().ValidateLocation(context.Background(), "cep").Return("", errors.New("error")).Times(1)
 				return mock
 			},
 			assertFunc: func(t *testing.T, got *Weather, err error) {
@@ -50,8 +51,8 @@ func TestWeatherUseCaseImpl_Execute(t *testing.T) {
 			prepareMocks: func(t *testing.T) *mock_gateway.MockWeatherGatewayInterface {
 				ctrl := gomock.NewController(t)
 				mock := mock_gateway.NewMockWeatherGatewayInterface(ctrl)
-				mock.EXPECT().ValidateLocation("cep").Return("", nil).Times(1)
-				mock.EXPECT().GetWeather().Return(float64(0), errors.New("error")).Times(1)
+				mock.EXPECT().ValidateLocation(context.Background(), "cep").Return("", nil).Times(1)
+				mock.EXPECT().GetWeather(context.Background()).Return(float64(0), errors.New("error")).Times(1)
 				return mock
 			},
 			assertFunc: func(t *testing.T, got *Weather, err error) {
@@ -64,7 +65,7 @@ func TestWeatherUseCaseImpl_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := tt.prepareMocks(t)
 			usecase := NewWeatherUseCase(mock)
-			got, err := usecase.Execute("cep")
+			got, err := usecase.Execute(context.Background(), "cep")
 			tt.assertFunc(t, got, err)
 		})
 	}

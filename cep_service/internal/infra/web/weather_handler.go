@@ -7,7 +7,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"net/http"
 
-	"github.com/matheusmhmelo/FullCycle-cep-service/cep_service/internal/usecase"
+	"github.com/matheusmhmelo/FullCycle-cep-service/internal/usecase"
 )
 
 type requestBody struct {

@@ -1,7 +1,8 @@
 package usecase
 
 import (
-	"github.com/matheusmhmelo/FullCycle-cep-service/cep_api/internal/infra/gateway"
+	"context"
+	"github.com/matheusmhmelo/FullCycle-cep-api/internal/infra/gateway"
 )
 
 type Weather struct {
@@ -12,7 +13,7 @@ type Weather struct {
 }
 
 type WeatherUseCase interface {
-	Execute(cep string) (*Weather, error)
+	Execute(ctx context.Context, cep string) (*Weather, error)
 }
 
 type weatherUseCaseImpl struct {
@@ -27,13 +28,13 @@ func NewWeatherUseCase(
 	}
 }
 
-func (w *weatherUseCaseImpl) Execute(cep string) (*Weather, error) {
-	loc, err := w.Gateway.ValidateLocation(cep)
+func (w *weatherUseCaseImpl) Execute(ctx context.Context, cep string) (*Weather, error) {
+	loc, err := w.Gateway.ValidateLocation(ctx, cep)
 	if err != nil {
 		return nil, err
 	}
 
-	weatherC, err := w.Gateway.GetWeather()
+	weatherC, err := w.Gateway.GetWeather(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -3,9 +3,10 @@ package web
 import (
 	"encoding/json"
 	"github.com/golang/mock/gomock"
-	"github.com/matheusmhmelo/FullCycle-cep-service/cep_api/internal/usecase"
-	"github.com/matheusmhmelo/FullCycle-cep-service/cep_api/internal/usecase/mock_usecase"
+	"github.com/matheusmhmelo/FullCycle-cep-api/internal/usecase"
+	"github.com/matheusmhmelo/FullCycle-cep-api/internal/usecase/mock_usecase"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,11 +19,14 @@ func TestOrderHandler_Get(t *testing.T) {
 		Kelvin:     1,
 	}
 
+	traceMock := otel.Tracer("test")
+
 	ctrl := gomock.NewController(t)
 	mock := mock_usecase.NewMockWeatherUseCase(ctrl)
-	mock.EXPECT().Execute("cep").Return(expected, nil).Times(1)
+	mock.EXPECT().Execute(gomock.Any(), "cep").Return(expected, nil).Times(1)
 	handler := OrderHandler{
-		weather: mock,
+		weather:    mock,
+		otelTracer: traceMock,
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/test?cep=cep", nil)

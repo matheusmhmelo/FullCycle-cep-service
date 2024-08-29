@@ -8,8 +8,8 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /app/weather cmd/weather/main.go
+RUN go build -o /app/weather_api cmd/weather/main.go
 
 EXPOSE 8080
 
-ENTRYPOINT ["/app/weather"]
+ENTRYPOINT ["/app/weather_api"]
